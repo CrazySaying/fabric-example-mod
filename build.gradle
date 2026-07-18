@@ -15,12 +15,20 @@ repositories {
 }
 
 loom {
-	splitEnvironmentSourceSets()
+	// 不 split client/server — Folia 只有服务端
+	// splitEnvironmentSourceSets()
 
 	mods {
 		"modid" {
 			sourceSet sourceSets.main
-			sourceSet sourceSets.client
+		}
+	}
+
+	// 使用 Mojang 官方映射（Mojmap），与 Folia 一致
+	// 这样模组可以直接使用 net.minecraft.world.entity.player.Player 等名称
+	runs {
+		server {
+			server()
 		}
 	}
 }
@@ -28,10 +36,11 @@ loom {
 dependencies {
 	// To change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	// 不指定 mappings，Loom 1.17+ 在 Minecraft 26.2 上默认使用 Mojmap
 	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-	// Fabric API. This is technically optional, but you probably want it anyway.
-	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+	// Fabric API — 目前 Folia 没有，先注释掉
+	// implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 }
 
 processResources {
@@ -48,13 +57,14 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 java {
-	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-	// if it is present.
-	// If you remove this line, sources will not be generated.
 	withSourcesJar()
 
 	sourceCompatibility = JavaVersion.VERSION_25
 	targetCompatibility = JavaVersion.VERSION_25
+
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(25)
+	}
 }
 
 jar {
